@@ -20,10 +20,7 @@ var App = {
         for (k=0; k<6; k++)
           App.colors.push(c[i] + c[j] + c[k]);
 
-    //for (var i = 1; i < 256; i++)
-      //App.colors.push(Math.round(0xffffff/i).toString(16));
-
-    App.colors.sort(function() {return 0.5 - Math.random()});
+     App.colors.sort(function() {return 0.5 - Math.random()});
   },
 
   drawMap: function(position){
@@ -34,44 +31,45 @@ var App = {
       navigationControlOptions: { style: google.maps.NavigationControlStyle.ANDROID }
     });
 
-    $("#routes li:first").text("Click on the map to choose start and end points");
-
     google.maps.event.addListener(App.map, 'click', function(event) { App.placeMarker(event.latLng); });
+    $("#routes li:first").text("Click on the map to choose start and end points");
   },
 
   placeMarker: function(location){
      if (App.markers.length == 2){
        for (i in App.markers)
          App.markers[i].setMap(null);
+       App.markers = [];
 
        for (i in App.lines)
          App.lines[i].setMap(null);
-
-       App.markers = [];
        App.lines = [];
+
        App.color = 0;
      }
 
-     App.markers.push(new google.maps.Marker({ position: location, map: App.map, draggable: true, icon: "http://chart.apis.google.com/chart?chst=d_map_spin&chld=1|0|FFFF88|10|_|" + (App.markers.length ? "end" : "start") }));
+     App.markers.push(new google.maps.Marker({ position: location, map: App.map, draggable: true, icon: "http://chart.apis.google.com/chart?chst=d_map_spin&chld=1|0|FFFF77|10|_|" + (App.markers.length ? "end" : "start") }));
 
      if (App.markers.length == 2){
-         var points = [];
+         var positions = [];
          for (i in App.markers)
-             points.push(App.markers[i].getPosition());
-         App.getStops(points);
+           positions.push(App.markers[i].getPosition());
+         App.getStops(positions[0], positions[1]);
      }
   },
 
-  getStops: function(points){
-    var dots = [points[0].lat(), points[0].lng(), points[1].lat(), points[1].lng()];
+  getStops: function(start, end){
     $("#routes").empty().append("<li class='loading'>Searching&hellip;</li>");
-    $.getJSON("stops.php", { points: dots.join(",") }, App.drawStops);
+
+    App.bounds = new google.maps.LatLngBounds();
+    App.bounds.extend(start);
+    App.bounds.extend(end);
+
+    $.getJSON("stops.php", { points: [start.lat(), start.lng(), end.lat(), end.lng()].join(",") }, App.drawStops);
   },
 
   drawStops: function(data, status){
     $("#routes").empty();
-
-    var bounds = new google.maps.LatLngBounds();
 
     for (var routeId in data){
       App.routes[routeId] = [];
@@ -80,25 +78,20 @@ var App = {
       for (var i in route){
         var position = new google.maps.LatLng(route[i]["Latitude"], route[i]["Longitude"]);
         App.routes[routeId].push(position);
-        bounds.extend(position);
+        App.bounds.extend(position);
         //new google.maps.Marker({ position: position, map: App.map });
       }
 
       App.drawRoute(routeId);
     }
 
-    App.map.fitBounds(bounds);
+    App.map.fitBounds(App.bounds);
   },
 
   drawRoute: function(routeId){
       //var color = "#" + Math.round(0xffffff * Math.random()).toString(16);
-      //var color = "#" + App.colors[App.color++];
-      var color = App.colors[App.color++];
-      //while (color.length < 6)
-        //color = "0" + color;
-      color = "#" + color;
+      var color = "#" + App.colors[App.color++];
 
-      console.log(color);
       var line = new google.maps.Polyline({
         path: App.routes[routeId],
         strokeColor: color,
@@ -132,10 +125,27 @@ var App = {
     var route = $(this).attr("id").match(/^route-(.+)/)[1];
     App.lines[route].setOptions({ strokeWeight: 4, strokeOpacity: 0.5 });
   },
-
-
-
 }
 
 $().ready(App.init);
+
+  /*getDirections: function(){
+      if (typeof App.directionsService == "undefined"){
+          App.directionsService = new google.maps.DirectionsService();
+          App.directionsRenderer = new google.maps.DirectionsRenderer();
+          App.directionsRenderer.setMap(App.map);
+      }
+
+      var request = {
+        origin: App.markers[0].getPosition(),
+        destination: App.markers[1].getPosition(),
+        travelMode: google.maps.DirectionsTravelMode.WALKING
+      };
+
+      App.directionsService.route(request, function(result, status) {
+        if (status == google.maps.DirectionsStatus.OK) {
+          App.directionsRenderer.setDirections(result);
+        }
+      });
+  },*/
 

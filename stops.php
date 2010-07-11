@@ -6,20 +6,14 @@ Config::set('DEBUG', 'FIRE');
 header('Content-Type: application/json;charset=utf-8');
 
 $mongo = new Mongo;
-$collection = $mongo->{'tfl'}->{'routes'};
-$stopcollection = $mongo->{'tfl'}->{'stops'};
-
-$collection->ensureIndex(array('Routes.Route' => 1, 'Routes.Run' => 1));
-$stopcollection->ensureIndex(array('Location' => '2d'));
+$mongo->{'tfl'}->{'stops'}->ensureIndex(array('Location' => '2d'));
 
 list($lat1, $long1, $lat2, $long2) = explode(',', $_GET['points']);
-
 $mybearing = bearing($lat1, $long1, $lat2, $long2);
-
 $center = array('Latitude' => (($lat1 + $lat2) / 2),  'Longitude' => (($long1 + $long2) / 2));
 $radius = sqrt(pow($lat1 - $lat2, 2) + pow($long1 - $long2, 2)) / 2;
 
-$stops = $stopcollection->find(array('Location' => array('$within' => array('$center' => array($center, $radius)))));
+$stops = $mongo->{'tfl'}->{'stops'}->find(array('Location' => array('$within' => array('$center' => array($center, $radius)))));
 
 $routes = array();
 foreach ($stops as $stop){
