@@ -5,6 +5,7 @@ var App = {
   markers: [],
   lines: [],
   routes: [],
+  bookends: [],
   color: 0,
 
   init: function(){
@@ -45,10 +46,14 @@ var App = {
          App.lines[i].setMap(null);
        App.lines = [];
 
+       for (i in App.bookends)
+         App.bookends[i].setMap(null);
+       App.bookends = [];
+
        App.color = 0;
      }
 
-     App.markers.push(new google.maps.Marker({ position: location, map: App.map, draggable: true, icon: "http://chart.apis.google.com/chart?chst=d_map_spin&chld=1|0|FFFF77|10|_|" + (App.markers.length ? "end" : "start") }));
+     App.markers.push(new google.maps.Marker({ position: location, map: App.map, draggable: true, icon: "http://chart.apis.google.com/chart?chst=d_map_spin&chld=1|0|FFFFFF|10|_|" + (App.markers.length ? "end" : "start") }));
 
      if (App.markers.length == 2){
          var positions = [];
@@ -78,26 +83,34 @@ var App = {
       App.routes[routeId] = [];
       var route = data["stops"][routeId];
 
+      //var color = "#" + Math.round(0xffffff * Math.random()).toString(16);
+      var color = App.colors[App.color++];
+
+      var count = 0;
+
       for (var i in route){
         var position = new google.maps.LatLng(parseFloat(route[i]["Latitude"]), parseFloat(route[i]["Longitude"]));
         App.routes[routeId].push(position);
         App.bounds.extend(position);
-        //new google.maps.Marker({ position: position, map: App.map });
+
+        if (count++ == 0)
+          App.bookends.push(new google.maps.Marker({ position: position, map: App.map, draggable: true,  icon: "http://chart.apis.google.com/chart?chst=d_map_spin&chld=1|0|" + color + "|10|_|" + routeId }));
+
       }
 
-      App.drawRoute(routeId);
+      if (count > 1)
+        App.bookends.push(new google.maps.Marker({ position: position, map: App.map, draggable: true, icon: "http://chart.apis.google.com/chart?chst=d_map_spin&chld=1|0|" + color + "|10|_|" + routeId }));
+
+      App.drawRoute(routeId, color);
     }
 
     App.map.fitBounds(App.bounds);
   },
 
-  drawRoute: function(routeId){
-      //var color = "#" + Math.round(0xffffff * Math.random()).toString(16);
-      var color = "#" + App.colors[App.color++];
-
+  drawRoute: function(routeId, color){
       var line = new google.maps.Polyline({
         path: App.routes[routeId],
-        strokeColor: color,
+        strokeColor: "#" + color,
         strokeOpacity: 0.5,
         strokeWeight: 4
       });
@@ -111,7 +124,7 @@ var App = {
   listRoute: function(routeId, color){
     var li = $("<li class='route'/>").attr("id", "route-" + routeId).mouseover(App.highlightRoute).mouseout(App.unhighlightRoute);
     li.append(
-      $("<span class='legend'/>").css("background-color", color)
+      $("<span class='legend'/>").css("background-color", "#" + color)
     );
     li.append(
       $("<span class='route-text'/>").text(routeId)

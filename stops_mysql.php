@@ -20,7 +20,7 @@ $db = new DB;
 
 $sql = "SELECT id, (%d * acos(cos(radians(%f)) * cos(radians(latitude)) * cos(radians(longitude) - radians(%f)) + sin(radians(%f)) * sin(radians(latitude)))) AS distance,
   latitude as Latitude, longitude as Longitude, route as Route, run as Run, `order` as `Order`
-  FROM stops HAVING distance < (%f * 60) ORDER BY distance LIMIT 0,1000";
+  FROM stops HAVING distance < (%f * 70) LIMIT 0,10000";
 
 $factor = 3959; //  using 3959 miles as Earth's radius
 $result = $db->query($sql, $factor, $lat, $lon, $lat, $radius);
