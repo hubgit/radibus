@@ -71,8 +71,8 @@ var App = {
   drawStops: function(data, status){
     $("#routes").empty();
 
-    var center = new google.maps.LatLng(parseFloat(data["center"]["Latitude"]), parseFloat(data["center"]["Longitude"]));
-    App.drawCircle(center, data["radius"] * 55.5, 100);
+    //var center = new google.maps.LatLng(parseFloat(data["center"]["Latitude"]), parseFloat(data["center"]["Longitude"]));
+    //App.drawCircle(center, data["radius"] * 55.5, 100);
 
     for (var routeId in data["stops"]){
       App.routes[routeId] = [];

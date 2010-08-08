@@ -9,6 +9,8 @@ $stopcollection = $mongo->{'tfl'}->{'stops'};
 $stopcollection->drop();
 
 require '/opt/libapi/main.php';
+Config::set('DEBUG', 'PRINT');
+
 $api = new API;
 
 $dir = $api->get_input_dir('tfl/bus/');

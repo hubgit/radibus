@@ -1,7 +1,7 @@
 <?php
 
 require '/opt/libapi/main.php';
-
+Config::set('DEBUG', 'PRINT');
 $api = new API;
 $dir = $api->get_output_dir('tfl/bus/');
 $api->get_data('http://www.tfl.gov.uk/tfl/gettingaround/maps/buses/tfl-bus-map/dotnet/AllRoutes.aspx');
