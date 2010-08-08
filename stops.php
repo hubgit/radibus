@@ -1,7 +1,7 @@
 <?php
 
 require '/opt/libapi/main.php';
-Config::set('DEBUG', 'FIRE');
+//Config::set('DEBUG', 'FIRE');
 
 header('Content-Type: application/json;charset=utf-8');
 
@@ -40,7 +40,11 @@ foreach ($routes as $route_id => $runs){
 }
 
 ksort($items);
-print json_encode($items);
+print json_encode(array(
+  'center' => $center,
+  'radius' => $radius,
+  'stops' => $items,
+  ));
 
 function bearing($lat1, $long1, $lat2, $long2){
   $args = func_get_args();

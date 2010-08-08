@@ -1,4 +1,4 @@
-html, body { height: 100%; width: 100%; margin: 0px; padding: 0px; background-color: #fff; }
+html, body { height: 100%; width: 100%; margin: 0px; padding: 0px; background-color: #fff; font-family: sans-serif; }
 #map { height: 100%; width: 90%; position: absolute; top: 0; left: 10%; }
 #routes { height: 100%; width: 10%; position: absolute; top: 0; left: 0; margin: 0px; padding: 0px; background-color: #eef;  overflow-y: auto; font-size: 80%; }
 #routes li { padding: 5px 10px;  }

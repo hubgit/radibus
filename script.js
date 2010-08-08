@@ -65,18 +65,21 @@ var App = {
     App.bounds.extend(start);
     App.bounds.extend(end);
 
-    $.getJSON("stops.php", { points: [start.lat(), start.lng(), end.lat(), end.lng()].join(",") }, App.drawStops);
+    $.getJSON("stops_mysql.php", { points: [start.lat(), start.lng(), end.lat(), end.lng()].join(",") }, App.drawStops);
   },
 
   drawStops: function(data, status){
     $("#routes").empty();
 
-    for (var routeId in data){
+    var center = new google.maps.LatLng(parseFloat(data["center"]["Latitude"]), parseFloat(data["center"]["Longitude"]));
+    App.drawCircle(center, data["radius"] * 55.5, 100);
+
+    for (var routeId in data["stops"]){
       App.routes[routeId] = [];
-      var route = data[routeId];
+      var route = data["stops"][routeId];
 
       for (var i in route){
-        var position = new google.maps.LatLng(route[i]["Latitude"], route[i]["Longitude"]);
+        var position = new google.maps.LatLng(parseFloat(route[i]["Latitude"]), parseFloat(route[i]["Longitude"]));
         App.routes[routeId].push(position);
         App.bounds.extend(position);
         //new google.maps.Marker({ position: position, map: App.map });
@@ -125,6 +128,42 @@ var App = {
     var route = $(this).attr("id").match(/^route-(.+)/)[1];
     App.lines[route].setOptions({ strokeWeight: 4, strokeOpacity: 0.5 });
   },
+
+   // Draw a circle on map around center (radius in miles)
+   // Modified from a version by Jeremy Schneider based on http://maps.huge.info/dragcircle2.htm
+   drawCircle: function(center, radius, numPoints){
+        var lat = center.lat() ;
+        var lng = center.lng() ;
+        var d2r = Math.PI/180 ;                // degrees to radians
+        var r2d = 180/Math.PI ;                // radians to degrees
+        var Clat = (radius/3963) * r2d ;      //  using 3963 miles as earth's radius
+        var Clng = Clat/Math.cos(lat*d2r);
+
+        var poly = [] ;
+        for (var i = 0 ; i < numPoints ; i++){
+            var theta = Math.PI * (i / (numPoints / 2)) ;
+            var Cx = lng + (Clng * Math.cos(theta)) ;
+            var Cy = lat + (Clat * Math.sin(theta)) ;
+            poly.push(new  google.maps.LatLng(Cy,Cx)) ;
+        }
+
+        //Add the first point to complete the circle
+        poly.push(poly[0]) ;
+
+        //Remove the old line if it exists
+        if (App.circle)
+          App.circle.setMap(null);
+
+        //Create a line with teh points from poly, red, 3 pixels wide, 80% opaque
+        App.circle = new google.maps.Polyline({
+          path: poly,
+          strokeColor: '#FF0000',
+          strokeWeight: 3,
+          strokeOpacity: 0.8
+        }) ;
+
+        App.circle.setMap(App.map);
+    }
 }
 
 $().ready(App.init);
